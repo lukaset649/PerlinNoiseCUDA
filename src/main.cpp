@@ -23,7 +23,7 @@ int main()
     {
         for (int x = 0; x < width; x++)
         {
-            float value = perlin(x * scale, y * scale);
+            float value = fbm(x * scale, y * scale, 5, 0.5f, 2.0f);
 
             value = (value + 1.0f) * 0.5f;
 

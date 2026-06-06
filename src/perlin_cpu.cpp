@@ -101,3 +101,24 @@ float perlin(float x, float y)
 
     return result;
 }
+
+float fbm(float x, float y, int octaves, float persistence, float lacunarity)
+{
+    float amplitude = 1.0f;
+    float frequency = 1.0f;
+
+    float sum = 0.0f;
+    float maxValue = 0.0f;
+
+    for (int i = 0; i < octaves; i++)
+    {
+        sum += perlin(x * frequency, y * frequency) * amplitude;
+
+        maxValue += amplitude;
+
+        amplitude *= persistence;
+        frequency *= lacunarity;
+    }
+
+    return sum / maxValue;
+}

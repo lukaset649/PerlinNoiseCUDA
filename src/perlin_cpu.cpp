@@ -46,4 +46,11 @@ static void initPermutation()
         permutationTable[i] = basePermutation[i];
         permutationTable[256 + i] = basePermutation[i];
     }
+
+	initialized = true;
+}
+
+static float fade(float t)
+{
+    return t * t * t * (t * (t * 6 - 15) + 10);
 }

@@ -1,23 +1,42 @@
-#Build files
-*.exe
-*.obj
-*.o
-*.pdb
-*.ilk
-
 #VS
 .vs/
-*.vcxproj.user
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
 
-#CMake
-build/
-CMakeFiles/
-CMakeCache.txt
+#Build
+Debug/
+Release/
+x64/
+x86/
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.log
+*.lastbuildstate
 
-#Output
-output/*
-benchmark/*
-
-# CUDA
+#CUDA
 *.cubin
 *.ptx
+*.fatbin
+*.nvvp
+
+#Generated output
+output/*
+!output/.gitkeep
+benchmarks/*
+!benchmarks/.gitkeep
+
+#temp
+*.tmp
+*.temp
+Thumbs.db
+.DS_Store

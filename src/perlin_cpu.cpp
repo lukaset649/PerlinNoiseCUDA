@@ -54,3 +54,17 @@ static float fade(float t)
 {
     return t * t * t * (t * (t * 6 - 15) + 10);
 }
+
+static float lerp(float a, float b, float t)
+{
+    return a + t * (b - a);
+}
+
+static float grad(int hash, float x, float y)
+{
+	int h = hash & 7;   //maska bitowa, wartoœci od 0 do 7
+    float u = h < 4 ? x : y;
+    float v = h < 4 ? y : x;
+
+    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}

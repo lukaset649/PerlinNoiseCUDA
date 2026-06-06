@@ -62,9 +62,42 @@ static float lerp(float a, float b, float t)
 
 static float grad(int hash, float x, float y)
 {
-	int h = hash & 7;   //maska bitowa, wartoœci od 0 do 7
+	int h = hash & 7;
     float u = h < 4 ? x : y;
     float v = h < 4 ? y : x;
 
     return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+
+float perlin(float x, float y)
+{
+    initPermutation();
+
+    int X = (int)floor(x) & 255;
+    int Y = (int)floor(y) & 255;
+
+    x -= floor(x);
+    y -= floor(y);
+
+    float u = fade(x);
+    float v = fade(y);
+
+    int aa = permutationTable[permutationTable[X] + Y];
+    int ab = permutationTable[permutationTable[X] + Y + 1];
+    int ba = permutationTable[permutationTable[X + 1] + Y];
+    int bb = permutationTable[permutationTable[X + 1] + Y + 1];
+
+    float result =
+        lerp(
+            lerp(
+                grad(aa, x, y),
+                grad(ba, x - 1.0f, y),
+                u),
+            lerp(
+                grad(ab, x, y - 1.0f),
+                grad(bb, x - 1.0f, y - 1.0f),
+                u),
+            v);
+
+    return result;
 }

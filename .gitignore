@@ -1,0 +1,23 @@
+#Build files
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+
+#VS
+.vs/
+*.vcxproj.user
+
+#CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+
+#Output
+output/*
+benchmark/*
+
+# CUDA
+*.cubin
+*.ptx

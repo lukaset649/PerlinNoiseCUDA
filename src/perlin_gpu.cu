@@ -5,9 +5,6 @@
 #include "../include/perlin.h"
 #include "../include/permutation.h"
 
-#define WIDTH 1024
-#define HEIGHT 1024
-
 __constant__ int d_permutation[512];
 
 void initPermutationGPU()

@@ -1,6 +1,6 @@
 #include "../include/perlin.h"
+#include "../include/image_io.h"
 #include <chrono>
-#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -21,24 +21,7 @@ int main()
 
     std::chrono::duration<double> elapsed = end - start;
 
-    //TODO: wydzieliæ zapis do pliku 
-    std::ofstream file("output/noise_cpu.pgm");
-
-    file << "P2\n";
-    file << width << " " << height << "\n";
-    file << "255\n";
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            file << static_cast<int>(
-                image[y * width + x])
-                << ' ';
-        }
-
-        file << '\n';
-    }
+    savePGM("output/noise_cpu.pgm", image.data(), width, height);
 
     std::cout << "CPU execution time: "
         << elapsed.count()

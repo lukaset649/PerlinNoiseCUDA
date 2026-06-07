@@ -47,6 +47,8 @@ __device__ float grad(int hash, float x, float y)
     return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
 }
 
+
+//  WERSJA PODSTAWOWA
 __device__ float perlin_device(float x, float y)
 {
     int X = ((int)floorf(x)) & 255;
@@ -63,35 +65,23 @@ __device__ float perlin_device(float x, float y)
     int ba = d_permutation[d_permutation[X + 1] + Y];
     int bb = d_permutation[d_permutation[X + 1] + Y + 1];
 
-    float result =
-        lerp(
-            lerp(
-                grad(aa, x, y),
-                grad(ba, x - 1.0f, y),
-                u),
-            lerp(
-                grad(ab, x, y - 1.0f),
-                grad(bb, x - 1.0f, y - 1.0f),
-                u),
-            v);
-
-    return result;
+    return lerp(
+        lerp(grad(aa, x, y), grad(ba, x - 1.0f, y), u),
+        lerp(grad(ab, x, y - 1.0f), grad(bb, x - 1.0f, y - 1.0f), u),
+        v);
 }
 
 __device__ float fbm_device(float x, float y, int octaves, float persistence, float lacunarity)
 {
     float amplitude = 1.0f;
     float frequency = 1.0f;
-
     float sum = 0.0f;
     float maxValue = 0.0f;
 
     for (int i = 0; i < octaves; i++)
     {
         sum += perlin_device(x * frequency, y * frequency) * amplitude;
-
         maxValue += amplitude;
-
         amplitude *= persistence;
         frequency *= lacunarity;
     }
@@ -104,12 +94,11 @@ __global__ void noiseKernel(unsigned char* output, int width, int height, float 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //zabezpieczenie przed wyjœciem pixeli w bloku poza rozmiar obrazu
     if (x >= width || y >= height)
     {
         return;
     }
-    
+
     float value = fbm_device(x * scale, y * scale, octaves, persistence, lacunarity);
     value = (value + 1.0f) * 0.5f;
 
@@ -131,7 +120,6 @@ double generateNoiseGPU(unsigned char* output, int width, int height, float scal
     dim3 block(16, 16);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
 
-    //mierzenie czasu
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -141,20 +129,122 @@ double generateNoiseGPU(unsigned char* output, int width, int height, float scal
     noiseKernel<<<grid, block>>>(d_output, width, height, scale, octaves, persistence, lacunarity);
 
     cudaEventRecord(stop);
-
     cudaEventSynchronize(stop);
 
     float elapsedMs = 0.0f;
     cudaEventElapsedTime(&elapsedMs, start, stop);
 
     cudaError_t err = cudaGetLastError();
-
     if (err != cudaSuccess)
     {
-        std::cout << "Kernel error: "
-            << cudaGetErrorString(err)
-            << '\n';
+        std::cout << "Kernel error: " << cudaGetErrorString(err) << '\n';
     }
+
+    cudaMemcpy(output, d_output, bytes, cudaMemcpyDeviceToHost);
+
+    cudaFree(d_output);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    return static_cast<double>(elapsedMs) / 1000.0;
+}
+
+//  WERSJA ZOPTYMALIZOWANA
+__device__ __forceinline__ float perlin_opt(float x, float y)
+{
+    int X = __float2int_rd(x) & 255;
+    int Y = __float2int_rd(y) & 255;
+
+    x -= (float)__float2int_rd(x);
+    y -= (float)__float2int_rd(y);
+
+    float u = fade(x);
+    float v = fade(y);
+
+    int aa = d_permutation[d_permutation[X] + Y];
+    int ab = d_permutation[d_permutation[X] + Y + 1];
+    int ba = d_permutation[d_permutation[X + 1] + Y];
+    int bb = d_permutation[d_permutation[X + 1] + Y + 1];
+
+    return lerp(
+        lerp(grad(aa, x, y), grad(ba, x - 1.0f, y), u),
+        lerp(grad(ab, x, y - 1.0f), grad(bb, x - 1.0f, y - 1.0f), u),
+        v);
+}
+
+__device__ __forceinline__ float fbm_opt(float x, float y, int octaves, float persistence, float lacunarity)
+{
+    float amplitude = 1.0f;
+    float frequency = 1.0f;
+    float sum = 0.0f;
+    float maxValue = 0.0f;
+
+    for (int i = 0; i < octaves; i++)
+    {
+        sum += perlin_opt(x * frequency, y * frequency) * amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= lacunarity;
+    }
+
+    return sum / maxValue;
+}
+
+__global__ void noiseKernelOptimized(
+    unsigned char* __restrict__ output,
+    int width, int height,
+    float scale, int octaves,
+    float persistence, float lacunarity)
+{
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (x >= width || y >= height)
+        return;
+
+    float value = fbm_opt(x * scale, y * scale, octaves, persistence, lacunarity);
+    value = (value + 1.0f) * 0.5f;
+
+    int gray = (int)(value * 255.0f);
+    gray = max(0, min(255, gray));
+
+    output[y * width + x] = static_cast<unsigned char>(gray);
+}
+
+double generateNoiseGPUOptimized(
+    unsigned char* output,
+    int width, int height,
+    float scale, int octaves,
+    float persistence, float lacunarity)
+{
+    initPermutationGPU();
+
+    size_t bytes = (size_t)width * height * sizeof(unsigned char);
+    unsigned char* d_output;
+    cudaMalloc(&d_output, bytes);
+
+    dim3 block(16, 16);
+    dim3 grid((width + block.x - 1) / block.x,
+        (height + block.y - 1) / block.y);
+
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
+
+    noiseKernelOptimized << <grid, block >> > (
+        d_output, width, height,
+        scale, octaves, persistence, lacunarity);
+
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float elapsedMs = 0.0f;
+    cudaEventElapsedTime(&elapsedMs, start, stop);
+
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess)
+        std::cout << "Kernel (opt) error: " << cudaGetErrorString(err) << '\n';
 
     cudaMemcpy(output, d_output, bytes, cudaMemcpyDeviceToHost);
 

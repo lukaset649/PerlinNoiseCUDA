@@ -13,9 +13,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\perlin_cpu.cpp" />
+    <ClCompile Include="src\permutation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\perlin.h" />
+    <ClInclude Include="include\permutation.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CBD54235-79B6-7B49-BC4F-6E3736CDBA10}</ProjectGuid>

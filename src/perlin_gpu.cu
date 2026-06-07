@@ -2,13 +2,29 @@
 #include <device_launch_parameters.h>
 #include <cmath>
 #include <iostream>
-
 #include "../include/perlin.h"
+#include "../include/permutation.h"
 
 #define WIDTH 1024
 #define HEIGHT 1024
 
-__device__ __constant__ int d_permutation[512];
+__constant__ int d_permutation[512];
+
+void initPermutationGPU()
+{
+    int h_permutation[512];
+
+    for (int i = 0; i < 256; i++)
+    {
+        h_permutation[i] = basePermutation[i];
+        h_permutation[i + 256] = basePermutation[i];
+    }
+
+    cudaMemcpyToSymbol(
+        d_permutation,
+        h_permutation,
+        sizeof(h_permutation));
+}
 
 __device__ float fade(float t)
 {

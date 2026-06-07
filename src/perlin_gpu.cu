@@ -6,9 +6,15 @@
 #include "../include/permutation.h"
 
 __constant__ int d_permutation[512];
+static bool permutationInitialized = false;
 
 void initPermutationGPU()
 {
+    if (permutationInitialized)
+    {
+        return;
+    }
+
     int h_permutation[512];
 
     for (int i = 0; i < 256; i++)
@@ -18,6 +24,8 @@ void initPermutationGPU()
     }
 
     cudaMemcpyToSymbol(d_permutation,h_permutation,sizeof(h_permutation));
+
+    permutationInitialized = true;
 }
 
 __device__ float fade(float t)

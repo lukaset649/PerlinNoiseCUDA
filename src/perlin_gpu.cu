@@ -126,7 +126,7 @@ void generateNoiseGPU(unsigned char* output, int width, int height, float scale,
     dim3 block(16, 16);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
 
-    noiseKernel<<<grid, block>>>(d_output, width, height, scale, octaves, persistance, lacunarity);
+    noiseKernel<<<grid, block>>>(d_output, width, height, scale, octaves, persistence, lacunarity);
 
     cudaDeviceSynchronize();
 

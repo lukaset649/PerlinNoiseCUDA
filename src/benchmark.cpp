@@ -61,11 +61,6 @@ void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float 
         double gpuAvg = gpuSum / n;
         double gpuOptAvg = gpuOptSum / n;
 
-        string tag = to_string(res.width) + "x" + to_string(res.height);
-        savePGM(("output/" + tag + "_cpu.pgm").c_str(), imageCPU.data(), res.width, res.height);
-        savePGM(("output/" + tag + "_gpu.pgm").c_str(), imageGPU.data(), res.width, res.height);
-        savePGM(("output/" + tag + "_gpu_opt.pgm").c_str(), imageGPUOpt.data(), res.width, res.height);
-
         cout << "\n-----------------------------\n";
         cout << "Resolution: " << res.width << "x" << res.height << '\n';
         cout << "Iterations: " << n << "\n\n";

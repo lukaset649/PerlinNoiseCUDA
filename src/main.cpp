@@ -8,6 +8,15 @@
 
 int main()
 {
+    bool saveImg = true;
+    bool saveSvg = true;
+    int iterations = 2;
+
+    float scale = 0.02f;
+    int octaves = 5;
+    float persistence = 0.5f;
+    float lacunarity = 2.0f;
+
     std::vector<Resolution> resolutions =
     {
         {256, 256},
@@ -17,8 +26,7 @@ int main()
         //{4096, 4096}
     };
 
-    runBenchmark(resolutions, 0.02f, 5, 0.5f, 2.0f);
-    runBenchmarkIterations(100, resolutions, 0.02f, 5, 0.5f, 2.0f);
+    runBenchmark(iterations, saveImg, saveSvg, resolutions, scale, octaves, persistence, lacunarity);
 
     return 0;
 }

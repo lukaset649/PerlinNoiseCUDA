@@ -8,6 +8,4 @@ struct Resolution
     int height;
 };
 
-void runBenchmark(const std::vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity);
-
-void runBenchmarkIterations(int n, const std::vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity);
+void runBenchmark(int n, bool saveImg, bool saveSvg, const std::vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity);

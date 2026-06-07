@@ -9,45 +9,22 @@
 
 using namespace std;
 
-void runBenchmark(const vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity)
-{
+void runBenchmark(
+    int n,
+    bool saveImg,
+    bool saveSvg,
+    const vector<Resolution>& resolutions,
+    float scale,
+    int octaves,
+    float persistence,
+    float lacunarity
+){
     cout << fixed << setprecision(6);
 
-    createBenchmarkCsv("output/benchmark.csv");
-
-    for (const auto& res : resolutions)
+    if (saveSvg)
     {
-        vector<unsigned char> imageCPU(res.width * res.height);
-        vector<unsigned char> imageGPU(res.width * res.height);
-        vector<unsigned char> imageGPUOpt(res.width * res.height);
-
-        double cpuTime = generateNoiseCPU(imageCPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
-        double gpuTime = generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
-        double gpuOptTime = generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
-
-        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "CPU", 1, cpuTime);
-        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU", 1, gpuTime);
-        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU_OPT", 1, gpuOptTime);
-
-        string tag = to_string(res.width) + "x" + to_string(res.height);
-        savePGM(("output/" + tag + "_cpu.pgm").c_str(), imageCPU.data(), res.width, res.height);
-        savePGM(("output/" + tag + "_gpu.pgm").c_str(), imageGPU.data(), res.width, res.height);
-        savePGM(("output/" + tag + "_gpu_opt.pgm").c_str(), imageGPUOpt.data(), res.width, res.height);
-
-        cout << "\n-----------------------------\n";
-        cout << "Resolution: "<< res.width << "x" << res.height << '\n' << '\n';
-        cout << "CPU time: "<< cpuTime << " s\n";
-        cout << "GPU time: "<< gpuTime << " s\n";
-        cout << "GPU opt time: " << gpuOptTime << " s\n";
-        cout << "-----------------------------\n";
+        createBenchmarkCsv("output/benchmark_iterations.csv");
     }
-}
-
-void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity)
-{
-    cout << fixed << setprecision(6);
-
-    createBenchmarkCsv("output/benchmark_iterations.csv");
 
     for (const auto& res : resolutions)
     {
@@ -65,9 +42,20 @@ void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float 
             gpuSum += generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
             gpuOptSum += generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
 
-            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "CPU", i+1, cpuSum);
-            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU", i + 1, gpuSum);
-            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU_OPT", i + 1, gpuOptSum);
+            if (saveSvg)
+            {
+                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "CPU", i + 1, cpuSum);
+                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU", i + 1, gpuSum);
+                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU_OPT", i + 1, gpuOptSum);
+            }
+        }
+
+        if (saveImg)
+        {
+            string tag = to_string(res.width) + "x" + to_string(res.height);
+            savePGM(("output/" + tag + "_cpu.pgm").c_str(), imageCPU.data(), res.width, res.height);
+            savePGM(("output/" + tag + "_gpu.pgm").c_str(), imageGPU.data(), res.width, res.height);
+            savePGM(("output/" + tag + "_gpu_opt.pgm").c_str(), imageGPUOpt.data(), res.width, res.height);
         }
 
         double cpuAvg = cpuSum / n;
@@ -79,8 +67,8 @@ void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float 
         cout << "Iterations: " << n << "\n\n";
         cout << "Avg time:\n";
         cout << "CPU: " << cpuAvg << " s\n";
-        cout << "GPU avg time: " << gpuAvg << " s\n";
-        cout << "GPU opt avg time: " << gpuOptAvg << " s\n";
+        cout << "GPU: " << gpuAvg << " s\n";
+        cout << "GPU_OPT: " << gpuOptAvg << " s\n";
         cout << "-----------------------------\n";
     }
 }

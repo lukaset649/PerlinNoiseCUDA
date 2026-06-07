@@ -13,6 +13,7 @@ void runBenchmark(
     int n,
     bool saveImg,
     bool saveSvg,
+    bool warmup,
     const vector<Resolution>& resolutions,
     float scale,
     int octaves,
@@ -23,7 +24,20 @@ void runBenchmark(
 
     if (saveSvg)
     {
-        createBenchmarkCsv("output/benchmark_iterations.csv");
+        createBenchmarkCsv("output/benchmark.csv");
+    }
+
+    int warmupRes = 255;
+    vector<unsigned char> warmupV(warmupRes * warmupRes);
+
+    if (warmup)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            generateNoiseCPU(warmupV.data(), warmupRes, warmupRes, scale, octaves, persistence, lacunarity);
+            generateNoiseGPU(warmupV.data(), warmupRes, warmupRes, scale, octaves, persistence, lacunarity);
+            generateNoiseGPUOptimized(warmupV.data(), warmupRes, warmupRes, scale, octaves, persistence, lacunarity);
+        }
     }
 
     for (const auto& res : resolutions)
@@ -38,15 +52,15 @@ void runBenchmark(
 
         for (int i = 0; i < n; ++i)
         {
-            cpuSum += generateNoiseCPU(imageCPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
-            gpuSum += generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
-            gpuOptSum += generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
+            cpuSum += generateNoiseCPU(imageCPU.data(), res.width, res.height, scale, octaves, persistence, lacunarity);
+            gpuSum += generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, octaves, persistence, lacunarity);
+            gpuOptSum += generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, octaves, persistence, lacunarity);
 
             if (saveSvg)
             {
-                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "CPU", i + 1, cpuSum);
-                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU", i + 1, gpuSum);
-                appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU_OPT", i + 1, gpuOptSum);
+                appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "CPU", i + 1, cpuSum);
+                appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU", i + 1, gpuSum);
+                appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU_OPT", i + 1, gpuOptSum);
             }
         }
 

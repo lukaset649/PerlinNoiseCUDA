@@ -10,6 +10,7 @@ int main()
 {
     bool saveImg = true;
     bool saveSvg = true;
+    bool warmup = true;
     int iterations = 2;
 
     float scale = 0.02f;
@@ -26,7 +27,7 @@ int main()
         //{4096, 4096}
     };
 
-    runBenchmark(iterations, saveImg, saveSvg, resolutions, scale, octaves, persistence, lacunarity);
+    runBenchmark(iterations, saveImg, saveSvg, warmup, resolutions, scale, octaves, persistence, lacunarity);
 
     return 0;
 }

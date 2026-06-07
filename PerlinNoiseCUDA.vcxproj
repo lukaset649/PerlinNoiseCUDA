@@ -21,6 +21,9 @@
     <ClInclude Include="include\perlin.h" />
     <ClInclude Include="include\permutation.h" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="src\perlin_gpu.cu" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CBD54235-79B6-7B49-BC4F-6E3736CDBA10}</ProjectGuid>
     <RootNamespace>PerlinNoiseCUDA</RootNamespace>

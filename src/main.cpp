@@ -8,23 +8,38 @@ int main()
 {
     constexpr int width = 1024;
     constexpr int height = 1024;
-
     constexpr float scale = 0.02f;
 
-    std::vector<unsigned char> image(width * height);
+    std::vector<unsigned char> imageCPU(width * height);
+    std::vector<unsigned char> imageGPU(width * height);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    //CPU
+    auto cpuStart = std::chrono::high_resolution_clock::now();
 
-    generateNoiseCPU(image.data(), width, height, scale, 5, 0.5f, 2.0f);
+    generateNoiseCPU(imageCPU.data(), width, height, scale, 5, 0.5f, 2.0f);
 
-    auto end = std::chrono::high_resolution_clock::now();
+    auto cpuEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> cpuElapsed =cpuEnd - cpuStart;
 
-    std::chrono::duration<double> elapsed = end - start;
+    savePGM("output/noise_cpu.pgm", imageCPU.data(), width, height);
 
-    savePGM("output/noise_cpu.pgm", image.data(), width, height);
+    //GPU
+    auto gpuStart = std::chrono::high_resolution_clock::now();
 
+    generateNoiseGPU(imageGPU.data(), width, height, scale, 5, 0.5f, 2.0f);
+
+    auto gpuEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> gpuElapsed = gpuEnd - gpuStart;
+
+    savePGM("output/noise_gpu.pgm", imageGPU.data(), width, height);
+
+    //wyniki
     std::cout << "CPU execution time: "
-        << elapsed.count()
+        << cpuElapsed.count()
+        << " s\n";
+
+    std::cout << "GPU execution time: "
+        << gpuElapsed.count()
         << " s\n";
 
     return 0;

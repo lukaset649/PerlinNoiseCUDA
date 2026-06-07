@@ -119,7 +119,7 @@ __global__ void noiseKernel(unsigned char* output, int width, int height, float 
     output[y * width + x] = static_cast<unsigned char>(gray);
 }
 
-void generateNoiseGPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
+double generateNoiseGPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
 {
     initPermutationGPU();
 
@@ -131,9 +131,21 @@ void generateNoiseGPU(unsigned char* output, int width, int height, float scale,
     dim3 block(16, 16);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
 
+    //mierzenie czasu
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     noiseKernel<<<grid, block>>>(d_output, width, height, scale, octaves, persistence, lacunarity);
 
-    cudaDeviceSynchronize();
+    cudaEventRecord(stop);
+
+    cudaEventSynchronize(stop);
+
+    float elapsedMs = 0.0f;
+    cudaEventElapsedTime(&elapsedMs, start, stop);
 
     cudaError_t err = cudaGetLastError();
 
@@ -147,4 +159,8 @@ void generateNoiseGPU(unsigned char* output, int width, int height, float scale,
     cudaMemcpy(output, d_output, bytes, cudaMemcpyDeviceToHost);
 
     cudaFree(d_output);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    return static_cast<double>(elapsedMs) / 1000.0;
 }

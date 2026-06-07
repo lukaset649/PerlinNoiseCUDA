@@ -1,6 +1,7 @@
 #include "../include/perlin.h"
 #include <cmath>
 #include "../include/permutation.h"
+#include <chrono>
 
 static bool initialized = false;
 static int permutationTable[512];
@@ -94,8 +95,10 @@ float fbm(float x, float y, int octaves, float persistence, float lacunarity)
     return sum / maxValue;
 }
 
-void generateNoiseCPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
+double generateNoiseCPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
@@ -119,4 +122,8 @@ void generateNoiseCPU(unsigned char* output, int width, int height, float scale,
             output[y * width + x] = static_cast<unsigned char>(gray);
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    return std::chrono::duration<double>(end - start).count();
 }

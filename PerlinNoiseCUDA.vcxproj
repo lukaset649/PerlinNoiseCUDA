@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\benchmark.cpp" />
     <ClCompile Include="src\image_io.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\perlin_cpu.cpp" />
     <ClCompile Include="src\permutation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\benchmark.h" />
     <ClInclude Include="include\image_io.h" />
     <ClInclude Include="include\perlin.h" />
     <ClInclude Include="include\permutation.h" />

@@ -93,3 +93,30 @@ float fbm(float x, float y, int octaves, float persistence, float lacunarity)
 
     return sum / maxValue;
 }
+
+void generateNoiseCPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
+{
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            float value = fbm(x * scale, y * scale, octaves, persistence, lacunarity);
+
+            value = (value + 1.0f) * 0.5f;
+
+            int gray = static_cast<int>(value * 255.0f);
+
+
+            //przyciêcie dla skali szaroœci 0-255
+            if (gray < 0) {
+                gray = 0;
+            }
+
+            if (gray > 255) {
+                gray = 255;
+            }
+
+            output[y * width + x] = static_cast<unsigned char>(gray);
+        }
+    }
+}

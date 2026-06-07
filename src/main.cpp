@@ -1,8 +1,8 @@
 #include "../include/perlin.h"
-
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 int main()
 {
@@ -11,8 +11,17 @@ int main()
 
     constexpr float scale = 0.02f;
 
+    std::vector<unsigned char> image(width * height);
+
     auto start = std::chrono::high_resolution_clock::now();
 
+    generateNoiseCPU(image.data(), width, height, scale, 5, 0.5f, 2.0f);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = end - start;
+
+    //TODO: wydzieliæ zapis do pliku 
     std::ofstream file("output/noise_cpu.pgm");
 
     file << "P2\n";
@@ -23,24 +32,13 @@ int main()
     {
         for (int x = 0; x < width; x++)
         {
-            float value = fbm(x * scale, y * scale, 5, 0.5f, 2.0f);
-
-            value = (value + 1.0f) * 0.5f;
-
-            int gray = static_cast<int>(value * 255.0f);
-
-            if (gray < 0) gray = 0;
-            if (gray > 255) gray = 255;
-
-            file << gray << ' ';
+            file << static_cast<int>(
+                image[y * width + x])
+                << ' ';
         }
 
         file << '\n';
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> elapsed = end - start;
 
     std::cout << "CPU execution time: "
         << elapsed.count()

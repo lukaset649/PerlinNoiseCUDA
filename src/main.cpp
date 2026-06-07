@@ -14,10 +14,10 @@ int main()
         {512, 512},
         {1024, 1024},
         {2048, 2048},
-        //{4096, 4096}
+        {4096, 4096}
     };
 
-    runBenchmark(resolutions, 0.02f, 5, 0.5f, 2.0f);
+    runBenchmarkIterations(100, resolutions, 0.02f, 5, 0.5f, 2.0f);
 
     return 0;
 }

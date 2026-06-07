@@ -1,9 +1,10 @@
 #include "../include/benchmark.h"
 #include "../include/perlin.h"
-
 #include <iostream>
 #include <vector>
 #include <iomanip>
+
+using namespace std;
 
 void runBenchmark(const std::vector<Resolution>& resolutions, float scale, int octaves, float persistence, float lacunarity)
 {
@@ -18,15 +19,9 @@ void runBenchmark(const std::vector<Resolution>& resolutions, float scale, int o
         double gpuTime = generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
 
 
-        std::cout << "Resolution: "
-            << res.width << "x" << res.height << '\n';
-
-        std::cout << "CPU time: "
-            << cpuTime << " s\n";
-
-        std::cout << "GPU time: "
-            << gpuTime << " s\n";
-
-        std::cout << "-----------------------------\n";
+        cout << "Resolution: "<< res.width << "x" << res.height << '\n';
+        cout << "CPU time: "<< cpuTime << " s\n";
+        cout << "GPU time: "<< gpuTime << " s\n";
+        cout << "-----------------------------\n";
     }
 }

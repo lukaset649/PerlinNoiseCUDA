@@ -33,6 +33,17 @@ int main()
 
     savePGM("output/noise_gpu.pgm", imageGPU.data(), width, height);
 
+    //proste porównanie
+    int differences = 0;
+
+    for (int i = 0; i < width * height; i++)
+    {
+        if (imageCPU[i] != imageGPU[i])
+        {
+            differences++;
+        }
+    }
+
     //wyniki
     std::cout << "CPU execution time: "
         << cpuElapsed.count()
@@ -41,6 +52,10 @@ int main()
     std::cout << "GPU execution time: "
         << gpuElapsed.count()
         << " s\n";
+
+    std::cout << "Different pixels: "
+        << differences
+        << '\n';
 
     return 0;
 }

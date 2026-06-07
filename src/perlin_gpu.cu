@@ -127,6 +127,15 @@ void generateNoiseGPU(unsigned char* output, int width, int height, float scale,
 
     cudaDeviceSynchronize();
 
+    cudaError_t err = cudaGetLastError();
+
+    if (err != cudaSuccess)
+    {
+        std::cout << "Kernel error: "
+            << cudaGetErrorString(err)
+            << '\n';
+    }
+
     cudaMemcpy(output, d_output, bytes, cudaMemcpyDeviceToHost);
 
     cudaFree(d_output);

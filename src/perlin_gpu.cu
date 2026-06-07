@@ -20,10 +20,7 @@ void initPermutationGPU()
         h_permutation[i + 256] = basePermutation[i];
     }
 
-    cudaMemcpyToSymbol(
-        d_permutation,
-        h_permutation,
-        sizeof(h_permutation));
+    cudaMemcpyToSymbol(d_permutation,h_permutation,sizeof(h_permutation));
 }
 
 __device__ float fade(float t)
@@ -95,4 +92,24 @@ __device__ float fbm_device(float x, float y, int octaves, float persistence, fl
     }
 
     return sum / maxValue;
+}
+
+__global__ void noiseKernel(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
+{
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    //zabezpieczenie przed wyjœciem pixeli w bloku poza rozmiar
+    if (x >= width || y >= height)
+    {
+        return;
+    }
+    
+    float value = fbm_device(x * scale, y * scale, octaves, persistence, lacunarity);
+    value = (value + 1.0f) * 0.5f;
+
+    int gray = (int)(value * 255.0f);
+    gray = max(0, min(255, gray));
+
+    output[y * width + x] = static_cast<unsigned char>(gray);
 }

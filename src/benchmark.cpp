@@ -1,6 +1,7 @@
 #include "../include/benchmark.h"
 #include "../include/perlin.h"
 #include "../include/image_io.h"
+#include "../include/csv_writer.h"
 #include <iostream>
 #include <vector>
 #include <iomanip>
@@ -12,6 +13,8 @@ void runBenchmark(const vector<Resolution>& resolutions, float scale, int octave
 {
     cout << fixed << setprecision(6);
 
+    createBenchmarkCsv("output/benchmark.csv");
+
     for (const auto& res : resolutions)
     {
         vector<unsigned char> imageCPU(res.width * res.height);
@@ -21,6 +24,10 @@ void runBenchmark(const vector<Resolution>& resolutions, float scale, int octave
         double cpuTime = generateNoiseCPU(imageCPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
         double gpuTime = generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
         double gpuOptTime = generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
+
+        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "CPU", 1, cpuTime);
+        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU", 1, gpuTime);
+        appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU_OPT", 1, gpuOptTime);
 
         string tag = to_string(res.width) + "x" + to_string(res.height);
         savePGM(("output/" + tag + "_cpu.pgm").c_str(), imageCPU.data(), res.width, res.height);
@@ -40,6 +47,8 @@ void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float 
 {
     cout << fixed << setprecision(6);
 
+    createBenchmarkCsv("output/benchmark_iterations.csv");
+
     for (const auto& res : resolutions)
     {
         double cpuSum = 0.0;
@@ -55,6 +64,10 @@ void runBenchmarkIterations(int n, const vector<Resolution>& resolutions, float 
             cpuSum += generateNoiseCPU(imageCPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
             gpuSum += generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
             gpuOptSum += generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, 5, 0.5f, 2.0f);
+
+            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "CPU", i+1, cpuSum);
+            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU", i + 1, gpuSum);
+            appendBenchmarkResult("output/benchmark_iterations.csv", res.width, res.height, "GPU_OPT", i + 1, gpuOptSum);
         }
 
         double cpuAvg = cpuSum / n;

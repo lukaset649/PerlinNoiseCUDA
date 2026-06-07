@@ -8,4 +8,6 @@ void initPermutationGPU();
 
 double generateNoiseGPU(unsigned char* output, int width, int height,float scale, int octaves, float persistence, float lacunarity);
 
+double generateNoiseGPUOptimized(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity);
+
 double generateNoiseCPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity);

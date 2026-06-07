@@ -99,7 +99,7 @@ __global__ void noiseKernel(unsigned char* output, int width, int height, float 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //zabezpieczenie przed wyjœciem pixeli w bloku poza rozmiar
+    //zabezpieczenie przed wyjœciem pixeli w bloku poza rozmiar obrazu
     if (x >= width || y >= height)
     {
         return;
@@ -112,4 +112,25 @@ __global__ void noiseKernel(unsigned char* output, int width, int height, float 
     gray = max(0, min(255, gray));
 
     output[y * width + x] = static_cast<unsigned char>(gray);
+}
+
+void generateNoiseGPU(unsigned char* output, int width, int height, float scale, int octaves, float persistence, float lacunarity)
+{
+    initPermutationGPU();
+
+    size_t bytes = width * height * sizeof(unsigned char);
+    unsigned char* d_output;
+
+    cudaMalloc(&d_output, bytes);
+
+    dim3 block(16, 16);
+    dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
+
+    noiseKernel<<<grid, block>>>(d_output, width, height, scale, octaves, persistance, lacunarity);
+
+    cudaDeviceSynchronize();
+
+    cudaMemcpy(output, d_output, bytes, cudaMemcpyDeviceToHost);
+
+    cudaFree(d_output);
 }

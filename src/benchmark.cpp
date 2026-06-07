@@ -12,7 +12,7 @@ using namespace std;
 void runBenchmark(
     int n,
     bool saveImg,
-    bool saveSvg,
+    bool saveCsv,
     bool warmup,
     const vector<Resolution>& resolutions,
     float scale,
@@ -22,7 +22,7 @@ void runBenchmark(
 ){
     cout << fixed << setprecision(6);
 
-    if (saveSvg)
+    if (saveCsv)
     {
         createBenchmarkCsv("output/benchmark.csv");
     }
@@ -56,7 +56,7 @@ void runBenchmark(
             gpuSum += generateNoiseGPU(imageGPU.data(), res.width, res.height, scale, octaves, persistence, lacunarity);
             gpuOptSum += generateNoiseGPUOptimized(imageGPUOpt.data(), res.width, res.height, scale, octaves, persistence, lacunarity);
 
-            if (saveSvg)
+            if (saveCsv)
             {
                 appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "CPU", i + 1, cpuSum);
                 appendBenchmarkResult("output/benchmark.csv", res.width, res.height, "GPU", i + 1, gpuSum);
